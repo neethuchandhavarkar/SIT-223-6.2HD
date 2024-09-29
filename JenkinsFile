@@ -4,25 +4,35 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                script {
-                    env.PYTHON_HOME = 'C:/Python312/' // Replace with your Python installation path
-                    sh '${PYTHON_HOME}/python -m pip install -r requirements.txt'
-                    sh '${PYTHON_HOME}/python setup.py sdist'
-                }
-                archiveArtifacts artifacts: 'dist/*.tar.gz', allowEmptyArchive: true
+                echo "Installing dependencies from requirements.txt"
+                sh 'pip install -r requirements.txt'  // Install Python dependencies
+                echo "Building the source distribution"
+                sh 'python setup.py sdist'  // Build the source distribution
+                echo "Archiving built artifacts"
+                archiveArtifacts artifacts: 'dist/*.tar.gz', fingerprint: true  // Archive the built artifacts
             }
         }
         stage('Test') {
             steps {
-                sh '${PYTHON_HOME}/python -m pytest'
-                junit 'junit.xml'
+                echo "Running tests with pytest"
+                sh 'pytest'  // Execute the tests
+                echo "Publishing test results"
+                junit 'junit.xml'  // Publish test results in JUnit format
             }
         }
         stage('Code Quality Analysis') {
             steps {
-                sh '${PYTHON_HOME}/python -m pylint src'
-                sh '${PYTHON_HOME}/python -m flake8 src'
+                echo "Performing code quality analysis with pylint"
+                sh 'pylint src'  // Run pylint for code quality
+                echo "Running flake8 for style guide enforcement"
+                sh 'flake8 src'  // Run flake8 for style guide enforcement
             }
+        }
+    }
+
+    post {
+        always {
+            echo "Pipeline execution completed"
         }
     }
 }
