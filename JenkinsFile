@@ -1,0 +1,25 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Build') {
+            steps {
+                sh 'pip install -r requirements.txt'
+                sh 'python setup.py sdist'
+                archiveArtifacts 'dist/*.tar.gz'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'pytest'
+                junit 'junit.xml'
+            }
+        }
+        stage('Code Quality Analysis') {
+            steps {
+                sh 'pylint --from-stdin < src'
+                sh 'flake8 src'
+            }
+        }
+    }
+}
