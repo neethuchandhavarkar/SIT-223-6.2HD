@@ -2,39 +2,56 @@ pipeline {
     agent any
 
     stages {
+        stage('Checkout SCM') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                script {
+                    // Check if setuptools is installed
+                    try {
+                        bat 'python -c "import setuptools"'
+                    } catch (Exception e) {
+                        echo "setuptools not found. Installing..."
+                        bat 'pip install setuptools'
+                    }
+                }
+                // Install other dependencies from requirements.txt
+                bat 'pip install -r requirements.txt'
+            }
+        }
+
         stage('Build') {
             steps {
-                // Start the Python setup script without nohup
-                bat 'start /B python setup.py'  
-                echo "Installing dependencies from requirements.txt"
-                sh 'pip install -r requirements.txt'  // Install Python dependencies
-                echo "Building the source distribution"
-                sh 'python setup.py sdist'  // Build the source distribution
-                echo "Archiving built artifacts"
-                archiveArtifacts artifacts: 'dist/*.tar.gz', fingerprint: true  // Archive the built artifacts
+                // Running your build command; adjust as necessary
+                bat 'python setup.py build'
             }
         }
+
         stage('Test') {
             steps {
-                echo "Running tests with pytest"
-                sh 'pytest'  // Execute the tests
-                echo "Publishing test results"
-                junit 'junit.xml'  // Publish test results in JUnit format
+                // Running tests; replace with your actual test command
+                bat 'pytest'
             }
         }
+
         stage('Code Quality Analysis') {
             steps {
-                echo "Performing code quality analysis with pylint"
-                sh 'pylint my_python_app'  // Run pylint for code quality
-                echo "Running flake8 for style guide enforcement"
-                sh 'flake8 my_python_app'  // Run flake8 for style guide enforcement
+                // Running a code quality analysis tool, e.g., flake8 or pylint
+                bat 'flake8 .'
             }
         }
     }
 
     post {
-        always {
-            echo "Pipeline execution completed"
+        success {
+            echo 'Pipeline executed successfully!'
+        }
+        failure {
+            echo 'Pipeline execution failed.'
         }
     }
 }
