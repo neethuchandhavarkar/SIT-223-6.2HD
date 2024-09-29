@@ -1,27 +1,24 @@
 pipeline {
     agent any
-    tools {
-        python 'Python 3.9'
-    }
 
     stages {
         stage('Build') {
             steps {
-                bat 'pip install -r requirements.txt'
-                bat 'python setup.py sdist'
+                sh 'pip install -r requirements.txt'
+                sh 'python setup.py sdist'
                 archiveArtifacts 'dist/*.tar.gz'
             }
         }
         stage('Test') {
             steps {
-                bat 'pytest'
+                sh 'pytest'
                 junit 'junit.xml'
             }
         }
         stage('Code Quality Analysis') {
             steps {
-                bat 'pylint --from-stdin < src'
-                bat 'flake8 src'
+                sh 'pylint --from-stdin < src'
+                sh 'flake8 src'
             }
         }
     }
