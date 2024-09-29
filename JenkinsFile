@@ -23,9 +23,9 @@ pipeline {
         stage('Code Quality Analysis') {
             steps {
                 echo "Performing code quality analysis with pylint"
-                sh 'pylint src'  // Run pylint for code quality
+                sh 'pylint my_python_app'  // Run pylint for code quality
                 echo "Running flake8 for style guide enforcement"
-                sh 'flake8 src'  // Run flake8 for style guide enforcement
+                sh 'flake8 my_python_app'  // Run flake8 for style guide enforcement
             }
         }
     }
