@@ -1,23 +1,33 @@
 pipeline {
     agent any
 
+    tools {
+        python 'Python 3.12' // Replace with the name of your Python installation in Jenkins
+    }
+
     stages {
         stage('Build') {
             steps {
+                // Install dependencies
                 sh 'pip install -r requirements.txt'
+                // Create a source distribution
                 sh 'python setup.py sdist'
-                archiveArtifacts 'dist/*.tar.gz'
+                // Archive the built artifacts
+                archiveArtifacts artifacts: 'dist/*.tar.gz', allowEmptyArchive: true
             }
         }
         stage('Test') {
             steps {
+                // Run tests
                 sh 'pytest'
+                // Publish JUnit test results
                 junit 'junit.xml'
             }
         }
         stage('Code Quality Analysis') {
             steps {
-                sh 'pylint --from-stdin < src'
+                // Run Pylint and Flake8
+                sh 'pylint src'
                 sh 'flake8 src'
             }
         }
