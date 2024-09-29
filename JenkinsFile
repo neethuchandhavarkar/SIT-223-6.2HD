@@ -5,7 +5,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    env.PYTHON_HOME = '/path/to/python3.12' // Replace with your Python installation path
+                    env.PYTHON_HOME = 'C:\Python312\' // Replace with your Python installation path
                     sh '${PYTHON_HOME}/python -m pip install -r requirements.txt'
                     sh '${PYTHON_HOME}/python setup.py sdist'
                 }
