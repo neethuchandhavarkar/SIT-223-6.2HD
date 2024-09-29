@@ -53,5 +53,9 @@ pipeline {
         failure {
             echo 'Pipeline execution failed.'
         }
+        always {
+            // Clean up or any other final steps
+            echo 'Cleaning up resources...'
+        }
     }
 }
