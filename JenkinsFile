@@ -4,7 +4,8 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                bat 'start python setup.py'
+                // Start the Python setup script without nohup
+                bat 'start /B python setup.py'  
                 echo "Installing dependencies from requirements.txt"
                 sh 'pip install -r requirements.txt'  // Install Python dependencies
                 echo "Building the source distribution"
