@@ -1,61 +1,46 @@
 pipeline {
-    agent any
+    agent any 
 
     stages {
-        stage('Checkout SCM') {
+        stage('Checkout') {
             steps {
+                // Checkout your source code from your repository
                 checkout scm
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                script {
-                    // Check if setuptools is installed
-                    try {
-                        bat 'python -c "import setuptools"'
-                    } catch (Exception e) {
-                        echo "setuptools not found. Installing..."
-                        bat 'pip install setuptools'
-                    }
-                }
-                // Install other dependencies from requirements.txt
+                // Install dependencies if needed
                 bat 'pip install -r requirements.txt'
             }
         }
 
-        stage('Build') {
+        stage('Run Tests') {
             steps {
-                // Running your build command; adjust as necessary
-                bat 'python setup.py build'
+                script {
+                    try {
+                        // Run pytest and generate results.xml in the test-reports directory
+                        bat 'pytest --junitxml=test-reports/results.xml'
+                    } catch (Exception e) {
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
             }
         }
 
-        stage('Test') {
+        stage('Publish Test Results') {
             steps {
-                // Running tests; replace with your actual test command
-                bat 'pytest'
-            }
-        }
-
-        stage('Code Quality Analysis') {
-            steps {
-                // Running a code quality analysis tool, e.g., flake8 or pylint
-                bat 'flake8 .'
+                // Publish the test results to Jenkins
+                junit 'test-reports/results.xml'
             }
         }
     }
-
+    
     post {
-        success {
-            echo 'Pipeline executed successfully!'
-        }
-        failure {
-            echo 'Pipeline execution failed.'
-        }
         always {
-            // Clean up or any other final steps
-            echo 'Cleaning up resources...'
+            // Clean up or perform additional steps if needed
+            echo 'Cleaning up...'
         }
     }
 }
