@@ -33,16 +33,18 @@ pipeline {
 
         stage('Test') {
             steps {
-                // Running tests; replace with your actual test command
+                // Running tests; ensure pytest is installed
+                echo 'Running tests...'
                 bat 'pytest'
             }
         }
 
         stage('Code Quality Analysis') {
             steps {
+                echo 'Performing code quality analysis...'
                 // Running a code quality analysis tool, e.g., flake8 or pylint
                 bat 'flake8 .'
-                bat 'pylint app.py' // Added to lint the app.py file
+                bat 'pylint app.py' // Lint the app.py file
             }
         }
     }
