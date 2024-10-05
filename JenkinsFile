@@ -42,6 +42,7 @@ pipeline {
             steps {
                 // Running a code quality analysis tool, e.g., flake8 or pylint
                 bat 'flake8 .'
+                bat 'pylint app.py' // Added to lint the app.py file
             }
         }
     }
