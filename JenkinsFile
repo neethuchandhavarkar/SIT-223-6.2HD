@@ -1,57 +1,61 @@
 pipeline {
-    agent any 
+    agent any
 
     stages {
-        stage('Checkout') {
+        stage('Checkout SCM') {
             steps {
-                // Checkout your source code from your repository
                 checkout scm
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                script {
+                    // Check if setuptools is installed
+                    try {
+                        bat 'python -c "import setuptools"'
+                    } catch (Exception e) {
+                        echo "setuptools not found. Installing..."
+                        bat 'pip install setuptools'
+                    }
+                }
+                // Install other dependencies from requirements.txt
+                bat 'pip install -r requirements.txt'
             }
         }
 
         stage('Build') {
             steps {
-                // Build your code and create a build artifact
-                bat 'mvn clean package' // Adjust this command based on your build tool
-            }
-            post {
-                success {
-                    archiveArtifacts artifacts: '**/*.jar', fingerprint: true // Archive the JAR file
-                }
+                // Running your build command; adjust as necessary
+                bat 'python setup.py build'
             }
         }
 
         stage('Test') {
             steps {
-                script {
-                    try {
-                        // Run automated tests using JUnit
-                        bat 'mvn test' // Adjust based on your testing framework
-                    } catch (Exception e) {
-                        currentBuild.result = 'UNSTABLE' // Mark build as unstable if tests fail
-                    }
-                }
-            }
-            post {
-                always {
-                    junit '**/target/surefire-reports/*.xml' // Publish test results
-                }
+                // Running tests; replace with your actual test command
+                bat 'pytest'
             }
         }
 
         stage('Code Quality Analysis') {
             steps {
-                script {
-                    def scannerHome = tool 'SonarQube Scanner' // Adjust based on your SonarQube setup
-                    bat "${scannerHome}/bin/sonar-scanner.bat -Dsonar.projectKey=your_project_key -Dsonar.sources=. -Dsonar.host.url=http://your-sonarqube-server -Dsonar.login=your_token"
-                }
+                // Running a code quality analysis tool, e.g., flake8 or pylint
+                bat 'flake8 .'
             }
         }
     }
-    
+
     post {
+        success {
+            echo 'Pipeline executed successfully!'
+        }
+        failure {
+            echo 'Pipeline execution failed.'
+        }
         always {
-            echo 'Pipeline completed.'
+            // Clean up or any other final steps
+            echo 'Cleaning up resources...'
         }
     }
 }
