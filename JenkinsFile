@@ -9,38 +9,49 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Build') {
             steps {
-                // Install dependencies if needed
-                bat 'pip install -r requirements.txt'
+                // Build your code and create a build artifact
+                bat 'mvn clean package' // Adjust this command based on your build tool
             }
-        }
-
-        stage('Run Tests') {
-            steps {
-                script {
-                    try {
-                        // Run pytest and generate results.xml in the test-reports directory
-                        bat 'pytest --junitxml=test-reports/results.xml'
-                    } catch (Exception e) {
-                        currentBuild.result = 'UNSTABLE'
-                    }
+            post {
+                success {
+                    archiveArtifacts artifacts: '**/*.jar', fingerprint: true // Archive the JAR file
                 }
             }
         }
 
-        stage('Publish Test Results') {
+        stage('Test') {
             steps {
-                // Publish the test results to Jenkins
-                junit 'test-reports/results.xml'
+                script {
+                    try {
+                        // Run automated tests using JUnit
+                        bat 'mvn test' // Adjust based on your testing framework
+                    } catch (Exception e) {
+                        currentBuild.result = 'UNSTABLE' // Mark build as unstable if tests fail
+                    }
+                }
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml' // Publish test results
+                }
+            }
+        }
+
+        stage('Code Quality Analysis') {
+            steps {
+                script {
+                    def scannerHome = tool 'SonarQube Scanner' // Adjust based on your SonarQube setup
+                    bat "${scannerHome}/bin/sonar-scanner.bat -Dsonar.projectKey=your_project_key -Dsonar.sources=. -Dsonar.host.url=http://your-sonarqube-server -Dsonar.login=your_token"
+                }
             }
         }
     }
     
     post {
         always {
-            // Clean up or perform additional steps if needed
-            echo 'Cleaning up...'
+            echo 'Pipeline completed.'
         }
     }
 }
